@@ -9,23 +9,44 @@ class App extends Component {
   state = {
     dataType: "metric1",
     valueMin: 0,
-    valueMax: 0
+    valueMax: 0,
+    width: 640,
+    height: 580
   };
 
   updateDataType = e => {
     this.setState({ dataType: e.target.value });
   };
 
+  componentDidMount() {
+    window.addEventListener("resize", this.redrawChart.bind(this));
+  }
+
+  redrawChart() {
+    const width = parseInt(d3.select(".Chart").style("width")),
+      height = parseInt(d3.select(".Chart").style("height"));
+
+    this.setState(prev => ({
+      width,
+      height
+    }));
+  }
+
   render() {
     const data = sampleData[this.state.dataType];
+    const spaceData = { metric1: 0, metric2: 1 };
     const max1 = d3.max(data.map(d => d.info1), d => d.value);
     const max2 = d3.max(data.map(d => d.info2), d => d.value);
     const valueMax =
-      ((max1 > max2 ? max1 : max2) < 0 ? 0 : max1 > max2 ? max1 : max2) * 1.035;
+      (max1 > max2 ? max1 : max2) < 0 ? 0 : max1 > max2 ? max1 : max2;
     const min1 = d3.min(data.map(d => d.info1), d => d.value);
     const min2 = d3.min(data.map(d => d.info2), d => d.value);
     const valueMin =
-      ((min1 < min2 ? min1 : min2) > 0 ? 0 : min1 < min2 ? min1 : min2) * 1.035;
+      (min1 < min2 ? min1 : min2) > 0 ? 0 : min1 < min2 ? min1 : min2;
+    const legendName1 = "basecase";
+    const legendName2 = "whatif";
+    const legendFill1 = "#393939";
+    const legendFill2 = "#3182bd";
     // console.log(valueMax);
     // console.log(valueMin);
     // const valueMin = this.state.valueMin;
@@ -39,7 +60,7 @@ class App extends Component {
     // console.log(data);
 
     return (
-      <div className="App">
+      <div className="App" id="App">
         <div className="Selector">
           <select name="city" onChange={this.updateDataType}>
             {[
@@ -55,7 +76,18 @@ class App extends Component {
         <div className="Chart">
           <h1>React Scroll Bar Chart</h1>
           <div className="chart-container">
-            <BarChart data={data} valueMax={valueMax} valueMin={valueMin} />
+            <BarChart
+              data={data}
+              dataType={spaceData[this.state.dataType]}
+              width={this.state.width}
+              height={this.state.height}
+              valueMax={valueMax}
+              valueMin={valueMin}
+              legendName1={legendName1}
+              legendName2={legendName2}
+              legendFill1={legendFill1}
+              legendFill2={legendFill2}
+            />
           </div>
         </div>
       </div>
